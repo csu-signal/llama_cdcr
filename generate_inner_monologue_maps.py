@@ -6,10 +6,10 @@ from collections import defaultdict
 def create_system_user_prompts(dataset, mention_map, split, men_type = "evt", heu = "lh"):
     """
     Generates the Inner-Monologue system and user prompts using trigger words and sentences of paired events
-    from LH or LH oracle heuristic.
+    using lemma-based heuristic.
     Returns: list of system and user prompts for each event mention pair (Str)
     """
-    dataset_folder = f'/s/chopin/d/proj/ramfis-aida/multimodal_NLI/Multimodal_CDCR/acl_submission_2023-main/datasets/{dataset}/'
+    dataset_folder = f'./datasets/{dataset}'
     mention_map = pickle.load(open(dataset_folder + "/mention_map.pkl", 'rb'))
     curr_mention_map = {m_id: m for m_id, m in mention_map.items() if m['men_type'] == men_type and m['split'] == split}
     split_mp_mpt, _ = pickle.load(open(dataset_folder + f'/{heu}/mp_mp_t_{split}.pkl', 'rb'))
