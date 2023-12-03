@@ -44,7 +44,7 @@ def main(dataset):
     label_to_cluster_map = {y:x for x, y in cluster_to_label_map.items()}
 
 
-    #get the clusters for all the train paiurs 
+    #get the clusters for all the train and dev pairs 
    
     dataset_folder = f'./datasets/{dataset}/'
     mention_map = pickle.load(open(dataset_folder + "/mention_map.pkl", 'rb'))
@@ -77,10 +77,6 @@ def main(dataset):
 
 
     #create cluster to label maps 
-
-    #get the cluster and splits 
-
-
     cluster_labels_train = []
     cluster_labels_dev = []
 
@@ -99,9 +95,6 @@ def main(dataset):
             cluster_labels_dev.append(label)
         else:
             cluster_labels_dev.append(label_to_cluster_map['dummy'])
-
-
-
 
     pairwise_bert_instances_train = []
     pairwise_bert_instances_dev = []
@@ -169,7 +162,7 @@ def main(dataset):
 
     tokenizer = AutoTokenizer.from_pretrained("allenai/longformer-base-4096")
     model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096", num_labels=num_labels)
-    special_tokens_dict = {'additional_special_tokens': ['<g>','<m>', '</m>', '<doc-s>', '</doc-s>','SEP']}
+    special_tokens_dict = {'additional_special_tokens': ['<g>','<m>', '</m>', '<doc-s>', '</doc-s>','SEP']} #special tokens for global attention and document boundaries 
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
     start_id = tokenizer.encode('<doc-s>', add_special_tokens=False)[0]
@@ -197,7 +190,7 @@ def main(dataset):
 
     # Create DataLoader for training and testing sets
 
-    #here you have to bring the individual events and the IM hypothesis
+    #Tokenizer events and the IM hypothesis separately and pad to max-length 
 
     train_dataset = TensorDataset(train_encodings_event['input_ids'], train_encodings_event['attention_mask'],\
                                   train_encodings_hypo['input_ids'], train_encodings_hypo['attention_mask'], train_labels)
@@ -211,7 +204,7 @@ def main(dataset):
     optimizer = AdamW(model.parameters(), lr=1e-5)
     cross_entropy_loss_fn = torch.nn.CrossEntropyLoss()
 
-    # Custom loss function with CrossEntropyLoss and L2 regularization
+    # Custom loss function with CrossEntropyLoss and cosine regularization of IM rationales with event pairs 
     def custom_loss(outputs, labels, event_embedding, rationale_embedding):
         # CrossEntropyLoss
         alpha = 0. # cosine distance regularization parameter after tuning 
@@ -240,9 +233,6 @@ def main(dataset):
             optimizer.zero_grad()
             outputs = model(input_ids, attention_mask=attention_mask, labels=labels, output_hidden_states =True)
             outputs_hypo = model(input_ids_hypo, attention_mask=attention_mask_hypo, labels=labels, output_hidden_states =True)
-
-            # Retrieve the CLS token and the last hidden state
-
             cls_token = outputs['hidden_states'][-1][:,0,:]  # CLS token
             cls_token_hypo = outputs_hypo['hidden_states'][-1][:,0,:]  # CLS token for IM rationale 
             #print(cls_token.size())
@@ -258,8 +248,7 @@ def main(dataset):
         avg_loss = total_loss / len(train_loader)
         print(f'Epoch {epoch + 1}/{num_epochs}, Average Loss: {avg_loss}')
         train_losses.append(avg_loss)
-    # ... rest of the code for evaluation
-
+        
         # Evaluation
         # Evaluation on the validation set
         model.eval()
@@ -300,7 +289,7 @@ def main(dataset):
         scorer_folder = dataset_folder + f'/rational_cluster_scorer/chk_{epoch}'
         if not os.path.exists(scorer_folder):
             os.makedirs(scorer_folder)
-        #pickle.dump(loss_dict, open(scorer_folder + f'/loss_dict_student_teacher_full_longformer_{n}.pkl', 'wb'))
+    
         model.save_pretrained(scorer_folder + '/bert')
         tokenizer.save_pretrained(scorer_folder + '/bert')
         print(f'saved model at {epoch}')
@@ -317,7 +306,7 @@ def main(dataset):
     scorer_folder = dataset_folder + f'/rational_cluster_scorer/chk_{epoch}'
     if not os.path.exists(scorer_folder):
         os.makedirs(scorer_folder)
-    #pickle.dump(loss_dict, open(scorer_folder + f'/loss_dict_student_teacher_full_longformer_{n}.pkl', 'wb'))
+
     model.save_pretrained(scorer_folder + '/bert')
     tokenizer.save_pretrained(scorer_folder + '/bert')
     print(f'saved model at {epoch}')
