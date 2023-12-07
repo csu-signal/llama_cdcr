@@ -32,19 +32,22 @@ def main(dataset):
     len(set(cluster_set))
 
     counter = collections.Counter(cluster_set)
-    #cluster_dict = counter.items()
-
     cluster_dict = dict(counter)
-    #cluster_dict = dict(sorted(cluster_dict.items(), key=lambda item: item[1]))
-    clus = [x for x, y in cluster_dict.items() if y >1] # without considering the singletons # appply kenyon dean's techique
-    clus.append("dummy")
+   
+   # clus = [x for x, y in cluster_dict.items() if y >1] # without considering the singletons for a class balancing experiment
+    clus = [x for x, y in cluster_dict.items()]
+    singleton_clus = [x for x, y in cluster_dict.items() if y==1] # with singletons # appply kenyon dean's techique to cluster all singletons 
+  
+    clus.append("dummy") # dummy variable for all negative event pairs without sigletons
+    clus.append("singleton") # dummy variable for all negative pair with singletons
+    
 
     #make a cluster to id map
     cluster_to_label_map = {x:y for x, y in enumerate(clus) } # if pairs is not in the same cluster--> add dummy class 
     label_to_cluster_map = {y:x for x, y in cluster_to_label_map.items()}
 
 
-    #get the clusters for all the train and dev pairs 
+    #get the clusters for all the train paiurs 
    
     dataset_folder = f'./datasets/{dataset}/'
     mention_map = pickle.load(open(dataset_folder + "/mention_map.pkl", 'rb'))
@@ -77,6 +80,10 @@ def main(dataset):
 
 
     #create cluster to label maps 
+
+    #get the cluster and splits 
+
+
     cluster_labels_train = []
     cluster_labels_dev = []
 
@@ -94,8 +101,14 @@ def main(dataset):
             label = label_to_cluster_map[cluster]
             cluster_labels_dev.append(label)
         else:
-            cluster_labels_dev.append(label_to_cluster_map['dummy'])
+            gold_clu_m1 = evt_mention_map_train[p[0]]['gold_cluster']  #for the first mention in the pair 
+            gold_clu_m2 = evt_mention_map_train[p[1]]['gold_cluster']  #for the first mention in the pair 
 
+            if gold_clu_m1 in singleton_clus or gold_clu_m2 in singleton_clus: # if one event in a pair is a singleton
+                cluster_labels_dev.append(label_to_cluster_map['singleton'])
+            else:
+                cluster_labels_dev.append(label_to_cluster_map['dummy'])
+            
     pairwise_bert_instances_train = []
     pairwise_bert_instances_dev = []
     event_pair_sep_train = []
@@ -162,7 +175,7 @@ def main(dataset):
 
     tokenizer = AutoTokenizer.from_pretrained("allenai/longformer-base-4096")
     model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096", num_labels=num_labels)
-    special_tokens_dict = {'additional_special_tokens': ['<g>','<m>', '</m>', '<doc-s>', '</doc-s>','SEP']} #special tokens for global attention and document boundaries 
+    special_tokens_dict = {'additional_special_tokens': ['<g>','<m>', '</m>', '<doc-s>', '</doc-s>','SEP']}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
     start_id = tokenizer.encode('<doc-s>', add_special_tokens=False)[0]
@@ -190,7 +203,7 @@ def main(dataset):
 
     # Create DataLoader for training and testing sets
 
-    #Tokenizer events and the IM hypothesis separately and pad to max-length 
+    #here you have to bring the individual events and the IM hypothesis
 
     train_dataset = TensorDataset(train_encodings_event['input_ids'], train_encodings_event['attention_mask'],\
                                   train_encodings_hypo['input_ids'], train_encodings_hypo['attention_mask'], train_labels)
@@ -204,7 +217,7 @@ def main(dataset):
     optimizer = AdamW(model.parameters(), lr=1e-5)
     cross_entropy_loss_fn = torch.nn.CrossEntropyLoss()
 
-    # Custom loss function with CrossEntropyLoss and cosine regularization of IM rationales with event pairs 
+    # Custom loss function with CrossEntropyLoss and L2 regularization
     def custom_loss(outputs, labels, event_embedding, rationale_embedding):
         # CrossEntropyLoss
         alpha = 0. # cosine distance regularization parameter after tuning 
@@ -233,6 +246,9 @@ def main(dataset):
             optimizer.zero_grad()
             outputs = model(input_ids, attention_mask=attention_mask, labels=labels, output_hidden_states =True)
             outputs_hypo = model(input_ids_hypo, attention_mask=attention_mask_hypo, labels=labels, output_hidden_states =True)
+
+            # Retrieve the CLS token and the last hidden state
+
             cls_token = outputs['hidden_states'][-1][:,0,:]  # CLS token
             cls_token_hypo = outputs_hypo['hidden_states'][-1][:,0,:]  # CLS token for IM rationale 
             #print(cls_token.size())
@@ -248,7 +264,8 @@ def main(dataset):
         avg_loss = total_loss / len(train_loader)
         print(f'Epoch {epoch + 1}/{num_epochs}, Average Loss: {avg_loss}')
         train_losses.append(avg_loss)
-        
+    # ... rest of the code for evaluation
+
         # Evaluation
         # Evaluation on the validation set
         model.eval()
@@ -284,15 +301,14 @@ def main(dataset):
         print(f'Epoch {epoch + 1}/{num_epochs}, Average Validation Loss: {avg_val_loss}')
         print(f'Accuracy on the validation set: {accuracy}')
         val_losses.append(avg_val_loss)
-        if epoch % 5 == 0:
-
-        scorer_folder = dataset_folder + f'/rational_cluster_scorer/chk_{epoch}'
-        if not os.path.exists(scorer_folder):
-            os.makedirs(scorer_folder)
-    
-        model.save_pretrained(scorer_folder + '/bert')
-        tokenizer.save_pretrained(scorer_folder + '/bert')
-        print(f'saved model at {epoch}')
+        # if epoch % 5 == 0:
+        #     scorer_folder = dataset_folder + f'/rational_cluster_scorer_falcon/chk_{epoch}'
+        #     if not os.path.exists(scorer_folder):
+        #         os.makedirs(scorer_folder)
+        #     #pickle.dump(loss_dict, open(scorer_folder + f'/loss_dict_student_teacher_full_longformer_{n}.pkl', 'wb'))
+        #     model.save_pretrained(scorer_folder + '/bert')
+        #     tokenizer.save_pretrained(scorer_folder + '/bert')
+        #     print(f'saved model at {epoch}')
 
         
         
@@ -303,13 +319,13 @@ def main(dataset):
     plt.legend()
     plt.show()
     plt.savefig(scorer_folder + 'loss_plot.png')
-    scorer_folder = dataset_folder + f'/rational_cluster_scorer/chk_{epoch}'
-    if not os.path.exists(scorer_folder):
-        os.makedirs(scorer_folder)
-
-    model.save_pretrained(scorer_folder + '/bert')
-    tokenizer.save_pretrained(scorer_folder + '/bert')
-    print(f'saved model at {epoch}')
+    # scorer_folder = dataset_folder + f'/rational_cluster_scorer_falcon/chk_{epoch}'
+    # if not os.path.exists(scorer_folder):
+    #     os.makedirs(scorer_folder)
+    # #pickle.dump(loss_dict, open(scorer_folder + f'/loss_dict_student_teacher_full_longformer_{n}.pkl', 'wb'))
+    # model.save_pretrained(scorer_folder + '/bert')
+    # tokenizer.save_pretrained(scorer_folder + '/bert')
+    # print(f'saved model at {epoch}')
 
    
 
