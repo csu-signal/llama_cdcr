@@ -13,10 +13,10 @@ output_list = []
 dataset = 'ecb'
 generated_IM_samples = defaultdict(list)
 
-output_folder = f'/s/chopin/d/proj/ramfis-aida/llama2/llama/datasets/{dataset}/'
+output_folder = f'./datasets/{dataset}/'
 def create_inner_monologue_prompts(dataset_folder =None):
 
-    dataset_folder = f'/s/chopin/d/proj/ramfis-aida/multimodal_NLI/Multimodal_CDCR/acl_submission_2023-main/datasets/{dataset}/'
+    dataset_folder = f'./datasets/{dataset}/'
     mention_map = pickle.load(open(dataset_folder + "/mention_map.pkl", 'rb'))
     evt_mention_map_train = {m_id: m for m_id, m in mention_map.items() if m['men_type'] == 'evt' and m['split'] == 'train'}
     evt_mention_map_dev = {m_id: m for m_id, m in mention_map.items() if m['men_type'] == 'evt' and m['split'] == 'dev'}
