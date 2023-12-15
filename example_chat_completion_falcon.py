@@ -133,7 +133,7 @@ def create_inner_monologue_prompts(dataset_folder =None):
 
 def create_zero_shot_prompts_for_eval(dataset):
     print(f"getting eval results for dataset:{dataset}")
-    dataset_folder = f'/s/chopin/d/proj/ramfis-aida/multimodal_NLI/Multimodal_CDCR/acl_submission_2023-main/datasets/{dataset}/'
+    dataset_folder = f'./datasets/{dataset}/'
     mention_map = pickle.load(open(dataset_folder + "/mention_map.pkl", 'rb'))
     evt_mention_map = {m_id: m for m_id, m in mention_map.items() if m['men_type'] == 'evt' and m['split'] == 'test'}
     test_mp_mpt, _ = pickle.load(open(dataset_folder + '/lh_llama/mp_mp_t_test.pkl', 'rb'))
