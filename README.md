@@ -3,7 +3,7 @@ This repository contains source code for reproducing the experiments that were c
 "Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation".
 Our experiments use LLaMA2-chat-7B as the teacher model and Longformer-base as the student model. 
 
-## Installation adn Dependencies 
+## Installation and Dependencies 
 The [**requirements.txt**](./requirements.txt). file contains dependencies that are needed to run the experiments in our pipeline. 
 In order to download the weights of the LLaMA2-chat-7B model (the teacher model), please use this
 (https://ai.meta.com/resources/models-and-libraries/llama-downloads/) link from Meta. After downloading the weight, convert them to the 
