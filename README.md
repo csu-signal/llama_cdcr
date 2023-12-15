@@ -1,6 +1,6 @@
 # llama_cdcr
 This repository contains source code for reproducing the experiments that were conducted for the paper titled,
-"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation".
+"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation", submitted to NAACL 2024.
 Our experiments use LLaMA2-chat-7B as the teacher model and Longformer-base as the student model. 
 
 ## Installation and Dependencies 
