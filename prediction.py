@@ -39,11 +39,12 @@ def predict_with_student_model(mention_map, model_name, linear_weights_path,line
 
     student_model_path = # Path for the trained student model. If not trained, use the Longformer base model 
  
-    # At inference, load trained state dictionaries and linear layer weights for initialization. 
+    # At inference, load trained state dictionaries and saved weights for the pairwise scorer mlp (linear_weights_path)
+    # and the teacher to student projection matrix weights (linear_layer_path). 
     
     print("model path", bert_path)
     linear_weights = torch.load(linear_weights_path,  map_location=torch.device('cpu'))
-    layer_weights = torch.load(layer_path,  map_location=torch.device('cpu'))
+    layer_weights = torch.load(linear_layer_path,  map_location=torch.device('cpu'))
     scorer_module = Student_teacher_model(is_training=False,long=True, student_model_name=student_model_name, linear_weights=linear_weights, teacher_to_student_weights = layer_weights).to(device)
     parallel_model = torch.nn.DataParallel(scorer_module, device_ids=device_ids)
     parallel_model.module.to(device)
