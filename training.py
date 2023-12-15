@@ -57,16 +57,13 @@ def train_student_teacher(dataset, student_model_name=None):
     dev_pairs = list(tps_dev + fps_dev)
     dev_labels = [1] * len(tps_dev) + [0] * len(fps_dev)
   
-    student_model_path = # Path for the trained student model. If not trained, use the Longformer base model 
+    student_model_path = # Path for the trained student model from the ROEC Phase
  
     # At inference, load trained state dictionaries and linear layer weights for initialization. 
     # linear_weights_path = student_model_path + "/linear.chkpt"  
-    # layer_path = student_model_path + "/teacher_to_student_layer.chkpt"
     # bert_path = student_model_path + '/bert'
     # print("model path", bert_path)
     #linear_weights = torch.load(linear_weights_path,  map_location=torch.device('cpu'))
-    #layer_weights = torch.load(layer_path,  map_location=torch.device('cpu'))
-     
     scorer_module = Student_teacher_model(is_training=True,long=True, student_model_name=student_model_name, linear_weights=None, teacher_to_student_weights = None).to(device)
     print(scorer_module)
     parallel_model = torch.nn.DataParallel(scorer_module, device_ids=device_ids)
