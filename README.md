@@ -1,6 +1,6 @@
 # llama_cdcr
 This repository contains source code for reproducing the experiments that were conducted for the paper titled,
-"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation", submitted to NAACL 2024.
+"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation", accepted at NAACL 2024 Main Conference.
 Our experiments use LLaMA2-chat-7B as the teacher model and Longformer-base as the student model. 
 
 ## Installation and Dependencies 
@@ -20,6 +20,7 @@ The  [**generate_inner_monologues.py**](./generate_inner_monologues.py) generate
 using LLaMA2-chat-7B. Use the function `create_zero_shot_prompts_for_eval(dataset = 'ecb')` 
 to generate the FTRs for ECB+ ('gvc' for GVC and 'ldc' for AIDA Phase 1). In order to map each rationale to 
 the corresponding event mentions in the corpora, use [**generate_inner_monologue_maps.py**](./generate_inner_monologue_maps.py.py). 
+The generated inner-monologues for the experiments in this paper along with the mapping of gold label mentions can be found at this [Google Drive link](https://drive.google.com/drive/folders/1KiDIIDn5hxboqL3awVTHJVzHbrxSy-Th?usp=drive_link).
 
 ## Phase 1 Training: ROEC 
 For training the Rationale-Oriented Event Clustering (ROEC) with the student model, run the script [**clustering_IM_rationale.py**](./clustering_IM_rationale.py). 
