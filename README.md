@@ -46,4 +46,15 @@ Run [**cluster_analysis.py**](./cluster_analysis.py) to generate the distributio
 ## Human Evaluation of FTRs 
 To generate the Krippendorff's alpha (α) and other metrics for our human evaluation component of the generated FTRs, run [**human_eval.ipynb**](./human_eval.ipynb)
  
+## Best Coreference Scores for various baselines/ablations
+For the best coreference scores on the test set pairs for each variation of models, access the `datasets/[dataset]/best_scores_llm_cdcr/` folder for the following:
+* `scores_gpt.pkl` : contains final coreference (pairwise) scores of zero-shot evaluation with GPT 3.5 Turbo
+* `scores_llama.pkl` : contains final coreference (pairwise) scores of zero-shot evaluation with LLama-2-chat-7b
+* `scores_paired.pkl` : contains final coreference (pairwise) scores of paired represenation learning baseline ( Murty
+et al. (2020) )
+* `scores_r1_k1.pkl` : contains final coreference (pairwise) scores of our ROEC + CKD model (best using both)
+* `scores_r0_k1.pkl` : contains final coreference (pairwise) scores of our CKD baseline without ROEC
+* `scores_r0_k0.pkl` : contains final coreference (pairwise) scores of our ROEC baseline without CKD
+* `test_pairs.pkl` : contains the corresponding final pairs for inference after candidate pruning using the non-oracle heuristic of (Ahmed et al., Findings 2023)
+
  
