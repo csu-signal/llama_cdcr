@@ -9,7 +9,11 @@ In order to download the weights of the LLaMA2-chat-7B model (the teacher model)
 (https://ai.meta.com/resources/models-and-libraries/llama-downloads/) link from Meta. After downloading the weights, convert them to the 
 HuggingFace Transformers format for accessing their pretrained model libraries using [**convert_llama_weights_to_hf.py**](./convert_llama_weights_to_hf.py)
 For the Longformer-base model (student model), 
-use the [HuggingFace link](https://huggingface.co/allenai/longformer-base-4096) to access the pretrained model.
+use the [HuggingFace link](https://huggingface.co/allenai/longformer-base-4096) to access the pretrained model. For the trained weights of our best student models (ROEC + CKD) for each corpora, check the following:
+* Longformer-scorer with ROEC and CKD for ECB+ (https://huggingface.co/Abhijnan/ECB_KD_ROEC_Llama2)
+* Longformer-scorer with ROEC and CKD for GVC (https://huggingface.co/Abhijnan/GVC_KD_ROEC_Llama2)
+* Longformer-scorer with ROEC and CKD for AIDA Phase 1 (https://huggingface.co/Abhijnan/AIDA_KD_ROEC_Llama2)
+
 
 ## Reproduce main results in the paper
 Please run this notebook [**Experiments_pipeline.ipynb**](./Experiments_pipeline.ipynb) to generate the 
