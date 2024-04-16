@@ -1,7 +1,7 @@
 # llama_cdcr
 This repository contains source code for reproducing the experiments that were conducted for the paper titled,
-"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation", accepted at NAACL 2024 Main Conference.
-Our experiments use LLaMA2-chat-7B as the teacher model and Longformer-base as the student model. 
+"Okay, Let's Do This! Modeling Event Coreference with Generated Rationales and Knowledge Distillation" (https://arxiv.org/abs/2404.03196), accepted at NAACL 2024 Main Conference.
+Our experiments use LLaMA2-chat-7B as the teacher model and Longformer-base as the student model.  
 
 ## Installation and Dependencies 
 The [**requirements.txt**](./requirements.txt). file contains dependencies that are needed to run the experiments in our pipeline. 
